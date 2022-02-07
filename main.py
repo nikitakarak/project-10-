@@ -23,6 +23,9 @@ def menu(message):
     if message.text=="Взять предмет":
         bot.send_message(message.chat.id,'Введите номер предмета')
         bot.register_next_step_handler(message, get_object);
+    elif message.text=="Вернуть предмет":
+        bot.send_message(message.chat.id,'Введите номер предмета')
+        bot.register_next_step_handler(message, return_object);        
     else :
         bot.send_message(message.chat.id,'Неизвестная команда')
         bot.register_next_step_handler(message, menu);
@@ -41,16 +44,36 @@ def get_class(message):
     user_id = message.from_user.id
     cursor.execute("UPDATE users SET class = ? WHERE user_id = ?", [classs,user_id])
     conn.commit()
-    markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1=types.KeyboardButton("Взять предмет")
-    markup.add(item1)
-    bot.send_message(message.chat.id,'Выберите что вам надо',reply_markup=markup)
-    bot.register_next_step_handler(message, menu);
+    menu_button(message)
 
 def get_object(message):
     idd = message.text
+    user_id = message.from_user.id
     if cursor.execute("SELECT * FROM objects WHERE id=?", [idd]):
-        bot.send_message(message.chat.id,'Предмет взят на 2 недели')
+        bot.send_message(message.chat.id,'Предмет взят')
+        cursor.execute("UPDATE objects SET user=(SELECT id FROM users WHERE user_id=?) WHERE id=?", [user_id,idd])
+        conn.commit()
+        menu_button(message)
+        
+        
+def return_object(message):
+    idd = message.text
+    user_id = message.from_user.id
+    if cursor.execute("SELECT * FROM objects WHERE id=?", [idd]):
+        bot.send_message(message.chat.id,'Предмет возвращен')
+        cursor.execute("UPDATE objects SET user=NULL WHERE id=?", [idd])
+        conn.commit()
+        menu_button(message)
+        
+        
+def menu_button(message):
+    markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1=types.KeyboardButton("Взять предмет")
+    item2=types.KeyboardButton("Вернуть предмет")
+    markup.add(item1)
+    markup.add(item2)
+    bot.send_message(message.chat.id,'Выберите что вам надо',reply_markup=markup)
+    bot.register_next_step_handler(message, menu)
     
     
-bot.infinity_polling( interval=10)
+bot.infinity_polling( interval=1)
