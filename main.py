@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-token='5255737415:AAFMEbBle3SfOCuyzMp9jV_VCnZTP6C2pK0'
+token='2067543421:AAHKcOTfDy9fZBfw-jfFnGRfM0qgsOZsyyQ'
 bot=telebot.TeleBot(token)
 import sqlite3
 conn = sqlite3.connect('db11.db', check_same_thread=False)
